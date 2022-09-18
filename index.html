@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html class="no-js" lang="">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>Coupling, Consistency, and Cohesion</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="stylesheet" href="node_modules/reveal.js/dist/reset.css" />
+    <link rel="stylesheet" href="node_modules/reveal.js/dist/reveal.css" />
+    <link
+      rel="stylesheet"
+      href="node_modules/reveal.js/dist/theme/solarized.css"
+    />
+    <link
+      rel="stylesheet"
+      href="node_modules/reveal.js/plugin/highlight/zenburn.css"
+    />
+    <style>
+      .container {
+        display: grid;
+        grid-auto-flow: column;
+      }
+
+      .attributed {
+        page-break-inside: avoid;
+        display: grid;
+        grid-auto-flow: row;
+        justify-content: center;
+        grid-template-rows: auto 80px;
+      }
+
+      .attributed p {
+        font-size: 0.5em;
+      }
+    </style>
+  </head>
+  <body>
+    <!--[if lt IE 8]>
+      <p class="browserupgrade">
+        You are using an <strong>outdated</strong> browser. Please
+        <a href="http://browsehappy.com/">upgrade your browser</a> to improve
+        your experience.
+      </p>
+    <![endif]-->
+
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h1>
+            <p>Coupling</p>
+            <p>Consistency</p>
+            <p>Cohesion</p>
+          </h1>
+          <aside>
+            This is a talk about how to find boundaries in software. It's a
+            high-level, theory heavy affair, so I'm not going to tell you how to
+            find those boundaries, but I'm going to try and give you some ways
+            to think about boundaries that I find useful.
+          </aside>
+        </section>
+
+        <section id="who-dis">
+          <section id="me">
+            <h1>I'm Bob!</h1>
+            <dl>
+              <dt>Fight me on Twitter</dt>
+              <dd>
+                <a href="https://twitter.com/bob_the_mighty">@bob_the_mighty</a>
+              </dd>
+              <dt>Find slides on Github</dt>
+              <dd>
+                <a href="github.com/bobthemighty"
+                  >github.com/bobthemighty/talk-boundaries</a
+                >
+              </dd>
+              <dt>Read my blog</dt>
+              <dd>
+                <a href="https://www.codefiend.co.uk">codefiend.co.uk</a>
+              </dd>
+              <dt>Read my book</dt>
+              <dd>
+                <a href="https://www.cosmicpython.com">cosmicpython.com</a>
+              </dd>
+            </dl>
+
+            <aside>
+              I'm Bob. I am currently an engineering coach at Cazoo where I used
+              to be the chief architect. You can find me on Twitter, and the
+              slides will all be uploaded to Github, including most of the words
+              I'm saying, because I like to write things out in long-form. This
+              is actually the last talk I'm going to do as a Cazoo employee,
+              because I'm joining a new company - CarbonRe - working to
+              decarbonise heavy industry.
+            </aside>
+          </section>
+
+          <section>
+            <h2>Talk to me about</h2>
+
+            <ul>
+              <li>Climate change</li>
+              <li>How to find work in climate</li>
+              <li>How to do your first talk</li>
+              <li>DDD and serverless architectures</li>
+            </ul>
+
+            <aside>
+              I'll be hanging around after the talk if you want to chat about
+              the contents of the talk, or if you want to talk about climate
+              change. If you're worried about the climate, but never talk about
+              it to anyone - you're not alone! We're all terrified, and I'd love
+              to chat about it. I'm also on a personal mission to get as many
+              smart people as possible into climate-tech startups, so if you
+              want to know how to find companies who are hiring to tackle
+              climate change, come and have a chat. I'd also love to talk to
+              people who think "I could do that" but never found the courage to
+              give a talk for themselves. It's actually easier than you think.
+            </aside>
+          </section>
+        </section>
+
+        <section id="why-this-talk">
+          <section>
+            <h1>Why does this matter?</h1>
+
+            <aside>
+              <p>
+                Why this talk? Partly because when the organisers asked me to
+                take part, I was halfway through writing a course on software
+                architecture, and this is the stuff I was thinking about. Mostly
+                because I think we don't spend enough time talking about the
+                fundamentals. Lots of people in software talk about libraries
+                you can use, or techniques you can apply, or services that are
+                available, but we rarely go back to basics and talk about the
+                principles that help us to make good choices.
+              </p>
+              <p>
+                I've been working at Cazoo for a few years. For those of you who
+                don't know, Cazoo is an online car dealership - we buy cars from
+                auction, we fix them and make them look pretty, then we sell
+                them on our website and deliver them to your house. It's like
+                Amazon for second hand cars.
+              </p>
+              For a while we were probably the fastest growing business in the
+              whole world. We built the first version of our system in about 90
+              days from start to finish, we made £100M in our first year of
+              trading, and after 18 months we launched on the NYSE for $8bn.
+              <p>
+                So people would say to me, you've built this thing in about five
+                minutes, what kind of scaling problems do you have?
+              </p>
+              <p>
+                And I'd inevitably say that actually we'd used Lambda, and
+                Dynamo, and these serverless technologies so scaling wasn't a
+                problem for us at all. Amazon are very good at scaling those
+                technologies and we outsource all the operational stuff to them.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h3>Boundaries are hard to get right</h3>
+            <aside>
+              <p>
+                The thing that's hard is figuring out how to take this huge
+                problem - e-commerce, car finance, deliveries, refurbishment,
+                pricing, and so on, and divide it up in a way that makes sense
+                so you can deliver it very quickly.
+              </p>
+              <p>
+                This is the stuff - boundaries and how to design software
+                systems - that we'll ask you about if you come to Cazoo to
+                interview as a principal engineer or architect and - when I
+                interview for those roles - people very often don't have a good
+                mental model.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h3>Boundaries are hard to change</h3>
+            <aside>
+              <p>
+                The boundaries of things are important, because they are hard to
+                change later, and they will screw you up in painful and
+                unforeseen ways if you get them wrong.
+              </p>
+            </aside>
+          </section>
+        </section>
+        <section id="agenda">
+          <h1>Three lenses</h1>
+          <h2>Coupling</h2>
+          <h2>Consistency</h2>
+          <h2>Cohesion</h2>
+          <aside>
+            So I'm going to talk about these three lenses that you can use for
+            reasoning about boundaries. It's going to be a whistle-stop tour,
+            because I'm short on time, but there'll be a bunch of links
+            throughout if you want more info, and you can always find me on
+            twitter, or at the conference and ask for more details if something
+            catches your attention.
+          </aside>
+        </section>
+
+        <section id="coupling">
+          <section>
+            <h1>Coupling</h1>
+            <figure class="attributed">
+              <img
+                src="https://live.staticflickr.com/3795/12812517473_b5e56dc797_c_d.jpg"
+              />
+              <figcaption>
+                <p class="attribution">
+                  "<a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://www.flickr.com/photos/58827557@N06/12812517473"
+                    >Egg balanced on Spoons - TROML - 647</a
+                  >" by
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://www.flickr.com/photos/58827557@N06"
+                    >Clint__Budd</a
+                  >
+                  is licensed under
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://creativecommons.org/licenses/by/2.0/?ref=openverse"
+                    >CC BY 2.0
+                    <img
+                      src="https://mirrors.creativecommons.org/presskit/icons/cc.svg"
+                      style="
+                        height: 1em;
+                        margin-right: 0.125em;
+                        display: inline;
+                      " /><img
+                      src="https://mirrors.creativecommons.org/presskit/icons/by.svg"
+                      style="
+                        height: 1em;
+                        margin-right: 0.125em;
+                        display: inline;
+                      " /></a
+                  >.
+                </p>
+              </figcaption>
+            </figure>
+            <aside>
+              The first and most fundamental lens we're going to talk about is
+              coupling. What is coupling? Usually when we talk about coupling in
+              software engineering, we mean that when one part of a system
+              changes, we have to change other parts in response.
+            </aside>
+          </section>
+
+          <section>
+            <h3>Is coupling bad?</h3>
+          </section>
+          <section>
+            <h3>Coupling is <em>necessary</em></h3>
+            <aside>
+              We can't complete eliminate coupling from our code. If we did, our
+              code wouldn't be able to do anything useful. Coupling is just a
+              consequence of one thing talking to another. You can invent a
+              fancy system for wiring things up at runtime so that they're not
+              coupled, but that just moves the coupling to somewhere else -
+              usually to the magical system you've invented, and that's often
+              not a wise trade-off. People often have a simplistic view of
+              coupling, though. In particular, lots of engineers will tell me
+              that coupling is bad, but Reuse is good.
+            </aside>
+          </section>
+
+          <section>
+            <h3>Re-use is coupling</h3>
+
+            <aside>
+              One of the classic dicta of software engineering is DRY - don't
+              repeat yourself. IF you follow this rule, things end up coupled.
+              Why? Because if you don't repeat yourself, so that every piece of
+              knowledge is in one place, then every part of the system that
+              depends on that knowledge is coupled to that one place.
+            </aside>
+          </section>
+
+          <section>
+            <h3>API Types are repeated!</h3>
+            <img src="assets/img/API_and_clients.png" class="r-stretch" />
+
+            <aside>
+              Let's imagine you work for a company who build web applications,
+              and your company builds a bunch of APIs and BFFs and
+              micro-frontends and all that jazz. Some smart ass says "hey, our
+              front end applications need to know what the API responses will
+              look like - that's a violation of DRY. Let's create an npm package
+              so that all our API types are in one place and can be shared
+              between client and server".
+            </aside>
+          </section>
+
+          <section>
+            <h3>DRY is not an improvement</h3>
+            <img
+              src="assets/img/API_and_clients_shared_types.png"
+              class="r-stretch"
+            />
+            <aside>
+              This is a terrible idea that will not die. It's a terrible idea
+              because every change to your API now requires a matching change in
+              all of the clients. You have _coupled_ two things that should have
+              been independent because of this broken idea of DRY.
+            </aside>
+          </section>
+
+          <section>
+            <h2>Is reuse bad?</h2>
+          </section>
+
+          <section>
+            <h2>Of course not!</h2>
+            <p>but we have to be <em>mindful</em> of coupling</p>
+
+            <aside>
+              Is reuse BAD? No, of course not. Reuse is good, DRY is a useful
+              heuristic, but reuse means coupling. Is coupling bad? No, it's
+              necessary, but we have to be _mindful_ about what we're coupling
+              and why.
+            </aside>
+          </section>
+        </section>
+
+        <section id="ship-related-changes">
+          <section>
+            <h1 class="r-stretch">Things that change together ship together</h1>
+            <aside>
+              The first heuristic we should use is this one: things that change
+              together ship together. What does this mean? It means that if you
+              have two functions, two classes, two APIs, whatever and whenever
+              you change one of them you also change the other? You should
+              deploy those things together. Don't pretend that these two things
+              are independent, because they're not - they're coupled. If you
+              want to ship two things independently, you have to uncouple them,
+              even if that means copying code, or copying data. Re-use is not
+              your friend here.
+            </aside>
+          </section>
+
+          <section>
+            <h3>Define your deployment boundaries</h3>
+            <img
+              src="assets/img/Deployment_boundaries.excalidraw.png"
+              class="r-stretch"
+            />
+            <aside>
+              Things that change together go in the same module, in the same
+              class, in the same package, in the same system. Generically, we
+              say that they form a _Deployment boundary_. A deployment boundary
+              is a line we can draw where everything inside the line is deployed
+              at the same time and everything _outside_ of the line is not.
+            </aside>
+          </section>
+
+          <section>
+            <h2>Small is beautiful</h2>
+            <aside>
+              Note: I hope everyone sees that we want deployment boundaries to
+              be small, ideally. A smaller deployment boundary means less stuff
+              to test when we deploy. It means less stuff that can be broken
+              when we make a change. If I have a system and I divide it up into
+              three deployment boundaries, then I can have three teams all
+              working in parallel making changes to their thing, and they can
+              ship whenever they like.
+            </aside>
+          </section>
+
+          <section>
+            <h2>Microservices are deployment boundaries</h2>
+            <footer>
+              <a href="https://is.gd/ccc_microservices"></a>
+            </footer>
+            <aside>
+              These days, of course, we do this through microservices. The
+              original microservices paper was written by some people from
+              Thoughtworks who had been experimenting with dividing up a project
+              into smaller pieces so that they could deliver those pieces in
+              parallel. This is what Cazoo did, too. Right from the beginning,
+              we spun up multiple teams, and those teams tackled smaller pieces
+              of the whole massive problem.
+            </aside>
+          </section>
+
+          <section>
+            <h2>Cloudformation stacks are deployment boundaries</h2>
+            <footer>
+              <a href="https://www.serverless.com"></a>
+            </footer>
+
+            <aside>
+              Each of our microservices is a cloudformation stack. It goes in
+              its own github repository, because it all deploys together, and we
+              use the Serverless Framework to define the resources that we use.
+            </aside>
+          </section>
+
+          <section>
+            <h3>Lambdas are (usually) not microservices</h3>
+
+            <img
+              src="assets/img/functions_sharing_database.excalidraw.png"
+              class="r-stretch"
+            />
+            <aside>
+              Please note that a single Lambda function is probably _not_ a
+              service by itself. A service can have many components. In
+              particular, we might have a single database that is accessed by
+              multiple functions. Such functions are coupled. A change to the
+              "add to cart" function might involve changing the way we store
+              data in the database, and if the database changes, so will the
+              "remove from cart" function. Things that change together ship
+              together, so all of the functions that use this database have to
+              ship together - they form a single deployment boundary.
+            </aside>
+          </section>
+
+          <section>
+            <h3>Microservices do not share databases</h3>
+            <img
+              src="assets/img/Deployment_boundaries.excalidraw.png"
+              class="r-stretch"
+            />
+            <aside>
+              By this point, everyone knows that microservices shouldn't share a
+              database: this is why - if two components share a database, then
+              changes can ripple from one to the other. The only way to avoid
+              that is for the components to _not_ share any database objects, at
+              which point they're really using two different databases.
+            </aside>
+          </section>
+
+          <section>
+            <h3>Functions may share a model</h3>
+
+            <img
+              src="assets/img/functions_sharing_model.excalidraw.png"
+              class="r-stretch"
+            />
+
+            <aside>
+              <p>
+                We might also have a domain model that's used by multiple
+                functions. Imagine we're asked to build an application for
+                managing books at a library. We need a function for checking
+                books in, a function for checking books out, maybe we need a
+                function that lets us search for a particular book, or a
+                function that lets us reserve a book and so on. It's likely that
+                we want to have a shared codebase across these functions.
+              </p>
+              <p>
+                Each of the functions uses our shared codebase as a library, and
+                that - again - means that they are coupled, just as they were by
+                the database. When we want to change how we reserve a book, that
+                means changes to the shared model, and those changes ripple out
+                to these functions. Things that change together ship together,
+                so these are all a single deployment boundary.
+              </p>
+              <p>
+                This is why you should avoid sharing libraries between
+                microservices as much as possible. DRY turns out to be a bad
+                heuristic in microservice architectures, because re-use is
+                coupling, and the whole point of microservices is to avoid
+                coupling these distinct components.
+              </p>
+            </aside>
+          </section>
+        </section>
+        <section id="temporal-coupling">
+          <section>
+            <h1>Temporal coupling</h1>
+            <aside>
+              There's another kind of coupling that's present in our systems,
+              and that's _temporal_ coupling.
+            </aside>
+          </section>
+
+          <section>
+            <h3>Temporal coupling in book borrowing</h3>
+
+            <img
+              src="assets/img/temporal_coupling.excalidraw.png"
+              class="r-stretch"
+            />
+            <aside>
+              <p>
+                If one component is temporally coupled to another, then it's
+                unable to return a result independently. It has to _wait_ for
+                the other component to respond. In this scenario, we have a Book
+                service, and a User service, and when you want to check out a
+                book, the checkout service has to call the book service to
+                update the book's state. This kind of RPC-oriented integration
+                is really common amongst microservice people, and it's horrible
+                and painful and bad, because this checkout service can't do its
+                job if the other service is broken.
+              </p>
+              <p>
+                In other words, the checkout service is coupled to these other
+                services in _time_. It's coupled because you have to wait. A
+                request that comes in here can't be completed until the requests
+                are completed here and here. If one of those requests breaks,
+                then so does your request.
+              </p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Event-Driven architecture reduces temporal coupling</h2>
+            <aside>
+              The solution to this is to avoid synchronous calls between systems
+              if possible. Instead we want to do the smallest amount of work we
+              can in this checkout service, and then the rest of the work can
+              happen later.
+            </aside>
+          </section>
+
+          <section>
+            <h3>Small is beautiful</h3>
+            <img
+              src="assets/img/async_checkout.excalidraw.png"
+              class="r-stretch"
+            />
+
+            <aside>
+              <p>
+                In our case that means we want to record that a user has checked
+                out a book, and then raise an event "Book Checked Out". The book
+                service can receive that event and update its local database.
+                This way, the original request is able to complete even if
+                there's a problem over here in the book service.
+              </p>
+              <p>
+                This is a _temporal_ boundary. We've drawn a line where some
+                things have to happen together, and some things can be deferred
+                until later. Cazoo do this a _lot_. We hardly have any service
+                to service API calls - instead everything is driven through
+                events.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h3>This is how Cazoo works</h3>
+            <img
+              src="assets/img/cazoo_checkout.excalidraw.png"
+              class="r-stretch"
+            />
+            <aside>
+              <p>
+                For example, when you buy a car, we raise an event called
+                OrderPlaced, and we use that to trigger payments, and to take
+                the car off the website, and to schedule your delivery.
+              </p>
+              <p>
+                The only thing that needs to happen synchronously is our storing
+                your order details into the local database.
+              </p>
+              <p>
+                But event driven architeture is tricky for a bunch of reason.
+                Primarily it's tricky because you have to give up on the notion
+                of consistency between components.
+              </p>
+            </aside>
+          </section>
+        </section>
+        <section>
+          <section>
+            <h1>Consistency</h1>
+            <figure class="attributed">
+              <img
+                src="https://live.staticflickr.com/4771/38977144830_99b971bc0b_c_d.jpg"
+              />
+              <figcaption>
+                <p class="attribution">
+                  "<a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://www.flickr.com/photos/49788302@N00/38977144830"
+                    >letter jumble</a
+                  >" by
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://www.flickr.com/photos/49788302@N00"
+                    >Sky Noir</a
+                  >
+                  is licensed under
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://creativecommons.org/licenses/by-nc/2.0/?ref=openverse"
+                    >CC BY-NC 2.0
+                    <img
+                      src="https://mirrors.creativecommons.org/presskit/icons/cc.svg"
+                      style="
+                        height: 1em;
+                        margin-right: 0.125em;
+                        display: inline;
+                      " /><img
+                      src="https://mirrors.creativecommons.org/presskit/icons/by.svg"
+                      style="
+                        height: 1em;
+                        margin-right: 0.125em;
+                        display: inline;
+                      " /><img
+                      src="https://mirrors.creativecommons.org/presskit/icons/nc.svg"
+                      style="
+                        height: 1em;
+                        margin-right: 0.125em;
+                        display: inline;
+                      " /></a
+                  >.
+                </p>
+              </figcaption>
+            </figure>
+            <aside>
+              So our first lens is coupling - we need to understand how changes
+              ripple through our system, and how temporal coupling affects our
+              requests. We want to draw small deployment boundaries and small
+              temporal boundaries. We use microservices to ship small systems,
+              and we use events to communicate between them. Our second lens is
+              _consistency_.
+            </aside>
+          </section>
+
+          <section>
+            <h2>What is consistency?</h2>
+            <p>
+              Requests through a system should see a <em>coherent</em> state
+            </p>
+            <aside>
+              Note: Consistency is the property that two requests through a
+              system will observe a coherent state. For example, in our library
+              system, you've either checked a book out or you haven't - this
+              isn't Schrodinger's bookshelf
+            </aside>
+          </section>
+
+          <section>
+            <h3>Consistency matters when making decisions</h3>
+            <aside>
+              Consistency is important whenever we want to make a decision. For
+              example, when you return a book to our library, if it's overdue,
+              we want to charge you a penalty fee. It's important that we charge
+              the right person, and that we charge the right amount. It would
+              suck if I return a book late, and you get charged for it, because
+              the data is inconsistent somehow. Without consistency it's hard to
+              make decisions, because the facts you're basing decisions on might
+              be wrong.
+            </aside>
+          </section>
+
+          <section>
+            <h4>Strong consistency</h4>
+            <p>All requests see all updates in the same order</p>
+            <img
+              class="r-stretch"
+              src="assets/img/strong_consistency.excalidraw.png"
+            />
+            <aside>
+              There's more than one kind of consistency, and we should be aware
+              of which kind we have and which kind we need. A system is strongly
+              consistent if all the processes using a system see all the
+              accesses to the system in the same order - so if we have the `get
+              book` function and the `check book out` function, then they see
+              all these updates in the same order. In a strongly consistent
+              system, there is only one shared view of state. All the processes
+              can agree on who has checked the book out.
+            </aside>
+          </section>
+
+          <section>
+            <h4>Eventual consistency</h4>
+            <p>States converge to a single view over time</p>
+            <img
+              class="r-stretch"
+              src="assets/img/eventual_consistency.excalidraw.png"
+            />
+            <aside>
+              <p>
+                If a system is _Eventually_ consistent, then all the processes
+                using the system will _Eventually_ agree on the state. A good
+                example of an eventually consistent system is DNS.
+              </p>
+              <p>
+                If you add a new DNS record to, say, GoDaddy then it takes time
+                to propogate. You might not see your new DNS entry for 10 or 15
+                minutes. Some parts of the internet might not see your new entry
+                for 24 hours, or even longer. Eventually, though, so long as you
+                don't keep changing your DNS settings, every part of the system
+                will have the same view of state.
+              </p>
+              <p>
+                In our library system, that might mean that when we check out a
+                book, it doesn't necessarily show as checked out on the website
+                immediately. This is the case for Cazoo - when you buy a car, we
+                use an event to remove the car from our website and, in the
+                early days, that led to occasional problems where a car was
+                bought by more than one customer. Big oops.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h3>Consistency is the first casualty of temporal decoupling</h3>
+            <aside>
+              Okay, so temporal coupling is _bad_ but as soon as we temporally
+              decouple things, we have to give up on strong consistency, and
+              that makes things hard.
+            </aside>
+          </section>
+
+          <section>
+            <h3>An eventually consistent story</h3>
+            <figure class="attributed">
+              <img
+                src="https://live.staticflickr.com/4199/35382805815_fb6783fef5_c_d.jpg"
+              />
+
+              <figcaption>
+                <p class="attribution">
+                  "<a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://www.flickr.com/photos/62586117@N05/35382805815"
+                    >A lot has happened since 1925</a
+                  >" by
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://www.flickr.com/photos/62586117@N05"
+                    >Neil. Moralee</a
+                  >
+                  is licensed under
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://creativecommons.org/licenses/by-nc-nd/2.0/?ref=openverse"
+                    >CC BY-NC-ND 2.0
+                    <img
+                      src="https://mirrors.creativecommons.org/presskit/icons/cc.svg"
+                      style="
+                        height: 1em;
+                        margin-right: 0.125em;
+                        display: inline;
+                      " /><img
+                      src="https://mirrors.creativecommons.org/presskit/icons/by.svg"
+                      style="
+                        height: 1em;
+                        margin-right: 0.125em;
+                        display: inline;
+                      " /><img
+                      src="https://mirrors.creativecommons.org/presskit/icons/nc.svg"
+                      style="
+                        height: 1em;
+                        margin-right: 0.125em;
+                        display: inline;
+                      " /><img
+                      src="https://mirrors.creativecommons.org/presskit/icons/nd.svg"
+                      style="
+                        height: 1em;
+                        margin-right: 0.125em;
+                        display: inline;
+                      " /></a
+                  >.
+                </p>
+              </figcaption>
+            </figure>
+            <aside>
+              It's hard because if two separate requests can mutate the same
+              piece of data, then you can end up in undesirable states.
+            </aside>
+          </section>
+          <section>
+            <img src="assets/img/maeve_binchy.excalidraw.png" />
+            <aside>
+              Maybe your Granny is using the library website to browse books by
+              Maeve Binchy. She's looking at the webpage for book number 12345,
+              and she clicks "reserve" on that book.
+            </aside>
+          </section>
+
+          <section>
+            <img src="assets/img/library_admin.excalidraw.png" />
+            <aside>
+              While your granny was reading the page, looking through the blurb
+              for Maeve's magnum opus, Circle of Friends, the librarian is
+              updating the catalogue, removing old books, fixing mistakes.
+            </aside>
+          </section>
+
+          <section>
+            <img src="assets/img/dirty_lust.excalidraw.png" />
+            <aside>
+              In the time it takes your grandmother to decide that this is the
+              book for her, the librarian has changed book 12345 to Dirty Lust
+              vol 4, guaranteeing an awkward conversation for the librarian when
+              she comes to collect her book.
+            </aside>
+          </section>
+        </section>
+        <section>
+          <section>
+            <h1>Handling concurrency</h1>
+
+            <aside>
+              There's really two ways to handle this case. Either you stop it
+              from happening at all, or you build a system that expects this
+              kind of problem and can manage it gracefully.
+            </aside>
+          </section>
+
+          <section>
+            <h3>Pessimistic Locking</h3>
+            <img src="assets/img/yer_granny_locking.excalidraw.png" />
+
+            <aside>
+              <p>
+                The classic way to handle concurrency issues in a data-centric
+                system is to use locking. The core idea of locking is that only
+                one client is allowed to modify a resource at a time.
+              </p>
+              <p>
+                In relational databases, we handle this by locking rows of data,
+                or sometimes entire tables. This reduces the potential
+                throughput of your system: the whole point is that only one
+                client can access data at a time, and that means you can only
+                handle one request at a time.
+              </p>
+            </aside>
+          </section>
+
+          <section>
+            <h3>Concurrent locks are rejected</h3>
+            <img src="assets/img/lock_contention.excalidraw.png" />
+
+            <aside>
+              <p>
+                For example, your granny could _lock_ the book she was looking
+                at while she was on the page, so that the librarian couldn't
+                change it until she'd finished with it.
+              </p>
+            </aside>
+          </section>
+
+          <section>
+            <h3>Problems emerge under load</h3>
+            <img src="assets/img/dead_lock.excalidraw.png" />
+
+            <aside>
+              <p>
+                If you've got lots of grannies, though, all looking at bits of
+                your catalogue, then you won't be able to change anything.
+                That's going to get very frustrating.
+              </p>
+              <p>
+                In particular, you can get this situation where you granny has
+                locked the book, and wants to lock the check out table, but the
+                librarian has locked the checkout and wants to lock the book.
+                This is a dead-lock, and it results in broken websites.
+              </p>
+
+              <p>
+                I've spoken to teams before who are deeply freaked out by
+                concurrency, and they insist that they need to have serialized
+                access to tables to avoid "race conditions". They're generally
+                wrong about this, but they haven't thought through the
+                consistency boundaries that would make the most sense for their
+                problem.
+              </p>
+              <p>
+                In the aggregate pattern, we match the design of our domain
+                model to the consistency boundaries that make most sense.
+              </p>
+            </aside>
+          </section>
+        </section>
+
+        <section id="aggregates">
+          <section>
+            <h1>The aggregate pattern</h1>
+          </section>
+          <section>
+            <h4>A cluster of objects, Only accessible through the root</h4>
+            <img
+              src="assets/img/aggregate_pattern.excalidraw.png"
+              class="r-stretch"
+            />
+            <footer>
+              <a href="https://is.gd/ccc_aggregate"></a>
+            </footer>
+            <aside>
+              <p>
+                An aggregate is a collection of related objects. One of the
+                classic examples is a shopping cart. In a shopping cart, I have
+                the cart itself, which probably has some identifier, is related
+                to a customer session and so on, and then I have the cart items,
+                which relate to a product, have a quantity and so forth. The
+                cart and its items together make up an aggregate. It's a cluster
+                of objects that change together.
+              </p>
+              <p>
+                We use our database to enforce consistency at the aggregate
+                level. If I've got two shopping carts, they can both be updated
+                concurrently, but only one concurrent write is allowed to an
+                individual cart.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h2>Aggregates are a consistency boundary</h2>
+            <!-- prettier-ignore -->
+            <code>
+              function addItemToCart(cartId, sku, qty) {
+
+                // fetch the whole cart
+                const cart = Carts.get(cartId)
+
+                // make a change
+                cart.addItem(sku, qty)
+
+                // persist the whole object
+                Carts.put(cart)
+              }
+            </code>
+            <aside>
+              <p>
+                When we want to make a change - let's say I want to add an item
+                - we do that by loading the whole cart out of the database,
+                making the changes, and then persisting the whole thing again.
+                We never interact with the items directly, we only work through
+                this public interface - the cart. The cart represents the
+                _scope_ of our persistent state.
+              </p>
+              <p>
+                Typically, we use a Repository pattern here - repositories load
+                aggregates from a database. There is no repository for loading
+                "cart item". There is no way to access a cart item except by
+                loading the cart, and calling methods on the cart. why? Because
+                the cart is our consistency boundary.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h2>Aggregates reduce locking</h2>
+
+            <img
+              src="assets/img/No_checkout_locks.excalidraw.png"
+              class="r-stretch"
+            />
+            <aside>
+              <p>
+                The only way to make changes to the items is to fetch the cart,
+                and that means we never need to lock the cart items table. We
+                only need to lock the cart row. Because there's no way for
+                someone to modify the items without using the cart, we can use
+                smaller locks and that reduces the scope for deadlocks and
+                performance problems.
+              </p>
+            </aside>
+          </section>
+        </section>
+
+        <section id="aggregates-with-dynamo">
+          <section>
+            <h3>Dynamo partitions are a consistency boundary</h3>
+            <img
+              src="assets/img/dynamo_partitions.excalidraw.png"
+              class="r-stretch"
+            />
+            <footer>
+              <a href="https://is.gd/ccc_partitions"
+                >https://is.gd/ccc_partitions</a
+              >
+            </footer>
+            <aside>
+              <p>
+                In serverless, we tend not to use relational databases, because
+                they're a nuisance and you need connection pools and usernames
+                and schema migrations, and all that boring stuff we want to
+                leave to Amazon. Instead the database of choice for serverless
+                applications is Dynamo. Here is how to implement an aggregate
+                pattern with Dynamo DB.
+              </p>
+              <p>
+                Objects in Dynamo DB have two keys - the partition key and the
+                sort key. Every operation in the Dynamo API (except scans)
+                requires a partition key. Why? Because the partition is the unit
+                of consistency. Whenever I make a change, I have to make a
+                change to a single partition.
+              </p>
+              <p>One aggregate maps to one partition key.</p>
+            </aside>
+          </section>
+          <section>
+            <h3>Optimistic concurrency</h3>
+            <!-- prettier-ignore -->
+            <code>
+              class Book {
+                checkOut (userId) {
+                    this.checkOutBy = userId;
+                    this.version ++;
+                }
+
+                updateTitle (newTitle) {
+                    this.title = newTitle;
+                    this.version ++;
+                }
+              }
+            </code>
+            <aside>
+              <p>
+                The easiest way to implement a lock in DynamoDB is to use
+                version numbers. We could create a new cart object, and when we
+                create the cart is has version "0".
+              </p>
+              <p>
+                When your granny reads the book from the datastore, we fetch the
+                version number.
+              </p>
+              <p>
+                Whenever we update a book somehow, we increment the version
+                number. When grandma tries to reserve the book, we notice that
+                she's trying to reserve version 0, but the book is now version
+                1.
+              </p>
+            </aside>
+          </section>
+
+          <section>
+            <h3>Optimistic concurrency</h3>
+            <!-- prettier-ignore -->
+            <code>
+            function checkOutBook (bookId, userId) {
+
+                const book = BookRepository.get(bookId);
+                book.checkOut(userId);
+
+                // this throws a ConcurrencyError
+                BookRepository.save(book);
+
+            }
+            </code>
+            <aside>
+              <p>
+                Usually, when this happens, we just have to retry the operation,
+                and everything will be fine. In this specific an embarassing
+                case, we'll show an error message, and then reload the webpage
+                to show the updated version of the book.
+              </p>
+              <p>
+                Granny can look for something else, or if she prefers, she can
+                stick with Dirty Lust, because Lord knows that Grandad could use
+                some pointers.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h3>Optimistic locks with DynamoDB</h3>
+            <p>
+              Dynamo DB has in-built support for optimistic concurrency control
+            </p>
+            <footer>
+              <a href="https://is.gd/ccc_conditional"></a>
+            </footer>
+            <aside>
+              <p>
+                Dynamo DB uses ConditionExpressions to provide optimistic
+                concurrency control. The link here is to Alex de Brie's site.
+                Caveat lector: he uses the word "aggregate" on this page to mean
+                something like a sum, or an average. He's not using the word in
+                the DDD sense, but it's a good overview of how to use
+                conditional expressions in your designs.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h3>Inserting a new cart</h3>
+            <!-- prettier-ignore -->
+            <code>
+    {
+        Item: {
+            pk: cart-123,
+            sk: __cart,
+            version: 0,
+        },
+        ConditionExpression: "attribute_not_exists(pk)",
+    }
+              </code>
+            <aside>
+              When we want to create a new cart we can use a condition
+              expression to say "insert this cart only if the cart does not
+              already exist". We're going to insert the cart at version zero,
+              but we'll fail if that partition key - that aggregate - is already
+              in the table.
+            </aside>
+          </section>
+          <section>
+            <h3>Updating a cart</h3>
+            <!-- prettier-ignore -->
+            <code>
+                  Update: {
+                    Key: {
+                        pk: cart-123,
+                        sk: __cart,
+                    },
+                    UpdateExpression: "ADD version :inc",
+                    ConditionExpression: "version = :prev",
+                    ExpressionAttributeValues: {
+                        ":inc": 1,
+                        ":prev": 0,
+                    },
+                }
+
+              </code>
+            <aside>
+              <p>
+                When we want to update our cart, we use an update expression.
+                This expression will add one to our version, that's here in the
+                UpdateExpression clause, and we will fail if the version number
+                doesn't match what we expect. So if cart isn't still version
+                zero, we'll fail with a concurrency error.
+              </p>
+              <p>
+                I've got some sample code for this in the github repository that
+                contains the slides so you can have a look and see how it works.
+                The code is for example purposes only, so please don't put it in
+                production, but it does demonstrate the concept.
+              </p>
+            </aside>
+          </section>
+        </section>
+        <section id="aggregate-size">
+          <section>
+            <h1>Aggregates balance safety and performance</h1>
+            <aside>
+              <p>
+                The aggregate pattern was first described as a solution to
+                relational database performance problems. We have this
+                trade-off, where we can lock _more_ - so only person can use the
+                library at a time - in exchange for safety, or lock _less_ - so
+                that Granny accidentally checks out softcore BDSM porn - in
+                exchange for better throughput.
+              </p>
+              <p>
+                In the aggregate pattern, we explicitly define consistency
+                boundaries at the domain model level. Instead of relying on our
+                database to lock objects, we build our own locks.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h4>Strong consistency within aggregates</h4>
+            <img
+              src="assets/img/consistency_boundaries.excalidraw.png"
+              class="r-stretch"
+            />
+            <h4>Eventual consistency between aggregates</h4>
+          </section>
+          <section>
+            <h3>Consistency is for decision making</h3>
+            <aside>
+              <p>
+                This is because we only need consistency when we're making
+                decisions. In this context a decision is a policy that we apply
+                when we change state in our system.
+              </p>
+              <p>
+                For example, coming back to our example at Cazoo, it's important
+                that when you pay for a shopping cart, you pay the right amount
+                for the items in the cart. We need to make a decision whether to
+                accept your payment or not, and that decisions depends on the
+                items you've added, and the amount you're paying us. If we don't
+                have strong consistency we could have a bug where a customer can
+                add an air freshener and a car, but only pay us for the air
+                freshener.
+              </p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Small is beautiful</h2>
+            <aside>
+              The biggest problem people have when designing aggregates is that
+              they make them too large. People think they need a lot more
+              consistency than they actually do.
+            </aside>
+          </section>
+        </section>
+        <section id="finding-aggregates">
+          <section>
+            <h2>Finding aggregates in the library</h2>
+
+            <aside>
+              <p>
+                In our library model customers need to be able to check books in
+                and out, they should be able to reserve books over the internet,
+                and they should receive fines if they return a book late.
+              </p>
+              <p>What are the aggregates?</p>
+            </aside>
+            <img src="assets/img/use_cases.excalidraw.png" class="r-stretch" />
+          </section>
+          <section>
+            <h3>Is our aggregate the book?</h3>
+            <img src="assets/img/book_class.excalidraw.png" class="r-stretch" />
+            <aside>
+              <p>
+                But remember that when I want to mutate the state of an
+                aggregate, I'm going to load the whole thing into memory. do I
+                need the complete history of a book to make borrowing decisions?
+              </p>
+              <p>
+                What are the operations exposed by a book aggregate? I can check
+                a book out, I can check a book in. If the book is late, do I
+                apply the fine to _the book_? That doesn't sound right - fines
+                are applied to a single customer, not to the book as a whole.
+              </p>
+              <p>
+                If I want to check out a book at version 3, but someone else has
+                paid a fine on version 3, should my request fail? That doesn't
+                seem correct. The consistency boundary is too large.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h3>Our aggregate is the <em>loan</em></h3>
+            <img src="assets/img/loan_class.excalidraw.png" class="r-stretch" />
+            <aside>
+              <p>
+                Pragmatically, it makes more sense to choose the Loan as the
+                aggregate. What operations does a loan have? I can start a loan,
+                I can return a loan, I can report that my dog has eaten the
+                book, and that's _it_. The loan contains all the information I
+                need to know in order to make a decision: was this book returned
+                on time?
+              </p>
+              <p>
+                We've made our consistency boundary really small. We require
+                that each individual lending is internally consistent - we can't
+                have two updates to the same lending at once - but we _don't_
+                require a single consistent view of the "book". The book does
+                not exist in our borrowing model. That seems like a problem,
+                though - humans think in terms of books.
+              </p>
+            </aside>
+          </section>
+        </section>
+        <section id="view-models">
+          <section>
+            <h1>Aggregates and view models</h1>
+            <aside>
+              To solve this, we use _view models_. The aggregate pattern is only
+              applicable when we're talking about code that makes _decisions_.
+              We use repositories, and aggregates, in code that is going to
+              change state. For code that _reads_ state, we can use a different
+              set of patterns.
+            </aside>
+          </section>
+          <section>
+            <h2>Use <em>projections</em> to maintain views</h2>
+            <img src="assets/img/cqrs.excalidraw.png" class="r-stretch" />
+            <footer>
+              <a href="https://is.gd/ccc_cqrs"></a>
+            </footer>
+            <aside>
+              <p>
+                We can think about our system as having two "sides" - the
+                write-side, where we make decisions and change state - and the
+                read-side where we only care about getting data in the quickest
+                way we can.
+              </p>
+              <p>
+                These two sides don't have to be perfectly consistent. So long
+                as each "lending" is consistent, it's okay for our "book" view
+                to be a few milliseconds out of date. If someone tries to check
+                out a book, they have to do that through this stronly consistent
+                write-side.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h3>Dynamo Change-streams FTW!</h3>
+            <img
+              src="assets/img/change_stream.excalidraw.png"
+              class="r-stretch"
+            />
+
+            <footer>
+              <a href="https://is.gd/change_streams"></a>
+            </footer>
+
+            <aside>
+              <p>
+                The simplest way to build this kind of system - a CQRS system -
+                in serverless is to use change streams.
+              </p>
+              <p>
+                In this model we have two dynamo tables, but we could use a
+                single table, it's just easier to show this way.
+              </p>
+              <p>
+                The _lending_ aggregate lives in this table over on the top.
+                Whenever we insert a record, or update a record, that results in
+                an event on the Dynamo change stream.
+              </p>
+              <p>
+                We handle that event with a lambda function that publishes it
+                over EventBridge. Our subscriber lambda down at the bottom
+                receives the event and updates the search database.
+              </p>
+              <p>
+                So this is how we handle consistency issues between boundaries -
+                we identify the boundary where we _need_ things to be strongly
+                consistent, we model those boundaries using the aggregate
+                pattern, and then we use techniques like CQRS to give eventual
+                consistency between those boundaries.
+              </p>
+              <p>
+                But how do we know what _needs_ to be consistent? How do we find
+                the loan aggregates?
+              </p>
+            </aside>
+          </section>
+        </section>
+        <section id="cohesion">
+          <section>
+            <h1>Cohesion</h1>
+            <figure class="attributed">
+              <img
+                src="https://live.staticflickr.com/222/476909988_af02b66e2a_c_d.jpg"
+              />
+              <figcaption>
+                <p class="attribution">
+                  "<a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://www.flickr.com/photos/7969902@N07/476909988"
+                    >Time Machine Clockwork</a
+                  >" by
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://www.flickr.com/photos/7969902@N07"
+                    >Pierre J.</a
+                  >
+                  is licensed under
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://creativecommons.org/licenses/by-nc-sa/2.0/?ref=openverse"
+                    >CC BY-NC-SA 2.0
+                    <img
+                      src="https://mirrors.creativecommons.org/presskit/icons/cc.svg"
+                      style="
+                        height: 1em;
+                        margin-right: 0.125em;
+                        display: inline;
+                      " /><img
+                      src="https://mirrors.creativecommons.org/presskit/icons/by.svg"
+                      style="
+                        height: 1em;
+                        margin-right: 0.125em;
+                        display: inline;
+                      " /><img
+                      src="https://mirrors.creativecommons.org/presskit/icons/nc.svg"
+                      style="
+                        height: 1em;
+                        margin-right: 0.125em;
+                        display: inline;
+                      " /><img
+                      src="https://mirrors.creativecommons.org/presskit/icons/sa.svg"
+                      style="
+                        height: 1em;
+                        margin-right: 0.125em;
+                        display: inline;
+                      " /></a
+                  >.
+                </p>
+              </figcaption>
+            </figure>
+            <aside>I think it comes down to Cohesion</aside>
+          </section>
+          <section id="cohesion">
+            <h2>What is cohesion?</h2>
+            <aside>
+              <p>
+                Cohesion means stickiness, it means that things clump together.
+                Cohesion in the context of software engineering is the degree to
+                which parts of a thing work together. The parts of a watch are
+                highly cohesive. They all work together smoothly, and if you
+                remove a part, the whole thing stops.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h3>Cohesion is the flip side of coupling</h3>
+            <aside>
+              <p>
+                That might sound familiar, right? Cohesion is related to
+                coupling. What's the difference?
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h4>Cohesion is <em>intra</em>-dependence</h4>
+
+            <img
+              src="assets/img/bounded_contexts.excalidraw.png"
+              class="r-stretch"
+            />
+            <h4>Coupling is <em>inter</em>-dependence</h4>
+
+            <aside>
+              <p>
+                Cohesion is intra-dependence - it's the connections between
+                parts within a module. Our
+              </p>
+              <p>
+                If things are coherent, then they belong together. It's natural
+                for us to put things together that are coherent. Being
+                laser-focused on cohesion actually reduces coupling.
+              </p>
+              <p>
+                In our borrowing context we need to understand loans and payment
+                fees but over in our catalogue context, we have catalogue items,
+                version histories, and the physical locations of books. Both
+                these bounded contexts are highly coherent, and that means there
+                is very little coupling between them.
+              </p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Why do utils packages suck?</h2>
+            <aside>
+              Everyone knows that it's bad to have a "utils" package, right?
+              It's a classic anti-pattern. Why is it an anti-pattern?
+            </aside>
+          </section>
+
+          <section>
+            <h2>Utils packages lack cohesion</h2>
+            <aside>
+              Because things in a "utils" package aren't coherent. It's just
+              stuff that we couldn't find a better place for. Utils packages
+              tend to become giant balls of string, all tangled up, and they
+              tend to be coupled to everything else. We talked about this at the
+              beginning.
+            </aside>
+          </section>
+
+          <section>
+            <h2>Reuse is coupling</h2>
+            <img
+              src="assets/img/coupling_through_reuse.excalidraw.png"
+              class="r-stretch"
+            />
+
+            <aside>
+              <p>
+                If you've got a "Borrowing" microservice, and a "Catalogue"
+                microservice in your library, but they both use a shared "utils"
+                package, then any change to the utils package can ripple out to
+                affect both of these systems. We've introduced _coupling_
+                because we have a shared dependency on this low _cohesion_ lib.
+              </p>
+              <p>
+                By contrast, a well-designed package has _high_ cohesion. Inside
+                a package, all the components should be closely related, they
+                _should_ be talking to each other. Between packages we want to
+                reduce our surface area. In a well-designed package we have a
+                small number of public types and functions that _abstract_ a
+                large number of private types and functions.
+              </p>
+              <p>
+                In our borrowing context we have only a couple of public types -
+                loan and penalty fee - and all the internal details are hidden
+                away. By contrast in a utils package, everything is public - by
+                definition.
+              </p>
+            </aside>
+          </section>
+        </section>
+        <section>
+          <section>
+            <h1>Bounded contexts</h1>
+            <footer>
+              <a href="https://is.gd/ccc_bounded_context"></a>
+            </footer>
+            <aside>
+              Finding cohesive boundaries is _hard_. This is the hardest thing
+              to get right, because - like aggregates - the boundaries are often
+              unintuitive at first. This is the thing I was talking about at the
+              beginning - the thing that Cazoo struggled with and still struggle
+              with today. It's really complicated. I'm going to show you the
+              heuristic I used when breaking Cazoo apart, which has mostly
+              worked well.
+            </aside>
+          </section>
+          <section>
+            <h2>Bounded contexts are conceptual boundaries</h2>
+            <aside>
+              <p>
+                Bounded contexts are a way for us to describe subsets of our
+                solution. The overall problem we have is "manage a library" but
+                that's a really big and unwieldy problem. What we need to do is
+                break it down into smaller, more manageable chunks.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h2>Decide what's in and what's out</h2>
+
+            <img src="assets/img/use_cases.excalidraw.png" class="r-stretch" />
+            <aside>
+              <p>
+                Again, our natural inclination is to look for nouns that we're
+                familiar with. In our library example, the intuitive solution is
+                to build a Book service that does ... everything.
+              </p>
+              <p>
+                If we want to avoid building a giant ball of mud, we need to
+                think in terms of the use-cases of our system. Instead of nouns,
+                we have to look for _verbs_.
+              </p>
+              <p>
+                If we return to our original view of the system, we've got four
+                major use cases:
+              </p>
+              <ul>
+                <li>Customers "Borrow"</li>
+                <li>Customers "Pay fines"</li>
+                <li>Librarians "Maintain catalogue items"</li>
+                <li>Both users "Query"</li>
+              </ul>
+
+              <p>
+                Each of these is a separate process. Each of these has its own
+                requirements for the model. They're all about books, sort of,
+                but those books don't have much overlap.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h3>Borrowing context</h3>
+            <img
+              src="assets/img/borrowing_context.excalidraw.png"
+              class="r-stretch"
+            />
+            <aside>
+              <p></p>
+              <p>
+                In the Borrowing context we have a Lending aggregate with a
+                checkout date, and a due date for return. We have a reservation
+                aggregate with an expiry date, and a collection date. These
+                aggregates are not consistent, but they are coherent because
+                they both affect the availability of a book. A reservation will
+                eventually turn into a loan.
+              </p>
+              <p>
+                When your gran returns dirty lust three weeks late she has to
+                pay a penalty fee. Again, this is a separate aggregate, but it's
+                part of the same solution space.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h3>Catalogue context</h3>
+            <img
+              src="assets/img/catalogue_context.excalidraw.png"
+              class="r-stretch"
+            />
+            <aside>
+              <p>
+                In the Catalogue context, we have much richer information about
+                a book - we need to know the title, the classification for the
+                book, the author and so on. We need to know which branch has the
+                physical item.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h3>Search context</h3>
+            <img
+              src="assets/img/search_context.excalidraw.png"
+              class="r-stretch"
+            />
+            <aside>
+              <p>
+                In the search context, we take date from the borrowing context
+                and the catalogue context to build a searchable index for our
+                customers and librarians. In this context, we don't care _which_
+                user has got a book checked out, or whether it was returned on
+                time. We only care whether the book is currently available or
+                not.
+              </p>
+              <p>
+                In the catalogue context, we want to use a classification number
+                to tell us what the book is about, but here in the search
+                context we translate that classification number to a set of
+                searchable tags.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h3>Context maps</h3>
+            <img
+              src="assets/img/context_map.excalidraw.png"
+              class="r-stretch"
+            />
+
+            <footer>
+              <a href="https://is.gd/ccc_context_map"></a>
+            </footer>
+
+            <aside>
+              <p>
+                We can construct a map of these concepts like this. This is
+                called a _context_ map and it describes how the parts of our
+                system interrelate at a conceptual level.
+              </p>
+              <p>
+                We draw out the relationships between our contexts. Both the
+                borrowing and search contexts are down-stream of the catalogue
+                context because they receive data from it.
+              </p>
+              <p>
+                The payments context depends on Stripe, and has some code - an
+                anti-corruption layer - that converts between Stripe's API model
+                and our internal domain model.
+              </p>
+              <p>
+                Notice that there _is no book object_. Catalogue items, loans,
+                reservations, payments, index items.
+              </p>
+              <p>
+                We don't need a book service, because book is a noun, and our
+                systems should be focused on process.
+              </p>
+              <p>
+                Each of these three bounded contexts has its own specific domain
+                jargon. That's what a bounded context _is_ - it's the set of
+                concepts that you need to understand in order to solve problems.
+                If you're an archivist, you need to know about classifications,
+                and catalogue items. If you're a librarian, you need to know
+                about stock takes and damage reports. If you're a customer, you
+                need to know when to return an item, and whether you're over
+                due. These things don't overlap at all. They're bounded - inside
+                the boundary we use one set of concepts with a rigorous
+                definition.
+              </p>
+            </aside>
+          </section>
+        </section>
+        <section id="putting-it-together">
+          <section>
+            <h1>Putting it all together</h1>
+            <aside>
+              <p>
+                Okay, that concludes our whistle stop tour. Let's briefly recap.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h2>Deployment boundary</h2>
+            <h4>Things that change together ship together</h4>
+            <img
+              src="assets/img/recap_deployment.excalidraw.png"
+              class="r-stretch"
+            />
+            <aside>
+              Our first boundary is the deployment boundary. We use
+              microservices to separate our systems into pieces that we can
+              deploy individually. We don't share databases or common libraries
+              if we can help it.
+            </aside>
+            <footer>
+              <a href="https://is.gd/ccc_microservices"></a>
+            </footer>
+            <aside></aside>
+          </section>
+          <section>
+            <h2>Deployment boundary</h2>
+
+            <ul>
+              <li>Find boundaries that align to reasons for change</li>
+              <li>Remember that reuse is coupling</li>
+            </ul>
+          </section>
+          <section>
+            <h2>Temporal Boundary</h2>
+            <h4>Do the minimum work per-request</h4>
+
+            <aside>
+              <p>
+                We spoke about temporal boundaries. We want to do the smallest
+                amount of work we can in each request, and then raise events so
+                that other systems can be eventually consistent. In this case,
+                your granny reserves her Maeve Binchy book, and we notify the
+                search service via EventBridge. The search service can then
+                update to say that item is not currently available.
+              </p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Conceptual boundary</h2>
+            <h4>What do you need to hold in your head?</h4>
+            <img
+              src="assets/img/recap_deployment.excalidraw.png"
+              class="r-stretch"
+            />
+
+            <aside>
+              <p>
+                We talked about conceptual or linguistic boundaries - bounded
+                contexts
+              </p>
+              <p>
+                Here we want to divide the system up by knowledge - what's the
+                smallest number of things you need to understand in order to
+                solve a problem?
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h2>Conceptual boundary</h2>
+            <h4>A single service might have multiple contexts</h4>
+            <img
+              src="assets/img/recap_deployment.excalidraw.png"
+              class="r-stretch"
+            />
+
+            <aside>
+              <p>
+                Microservices very often align to a single bounded context, but
+                you might have multiple bounded contexts in one service.
+              </p>
+            </aside>
+          </section>
+          <section>
+            <h2>Conceptual boundary</h2>
+            <ul>
+              <li>Look for processes</li>
+              <li>Don't model around nouns</li>
+            </ul>
+          </section>
+          <section>
+            <h2>Consistency boundary</h2>
+            <h4>What's the smallest unit of correctness?</h4>
+            <img src="assets/img/aggregates_in_context.png" class="r-stretch" />
+
+            <aside>
+              And we spent quite a long time talking about consistency
+              boundaries. Aggregates are a way to model consistency boundaries
+              inside our domain model. Some bounded contexts will only have a
+              single aggregate, others might have several.
+            </aside>
+          </section>
+          <section>
+            <h2>Consistency boundary</h2>
+            <ul>
+              <li>Use aggregates to make consistency explicit</li>
+              <li>Use eventual consistency between aggregates</li>
+            </ul>
+          </section>
+        </section>
+        <section>
+          <h1>Questions?</h1>
+          <dl>
+            <dt>Fight me on Twitter</dt>
+            <dd>
+              <a href="https://twitter.com/bob_the_mighty">@bob_the_mighty</a>
+            </dd>
+            <dt>Find slides on Github</dt>
+            <dd>
+              <a href="github.com/bobthemighty"
+                >github.com/bobthemighty/talk-boundaries</a
+              >
+            </dd>
+            <dt>Read my blog</dt>
+            <dd>
+              <a href="https://www.codefiend.co.uk">codefiend.co.uk</a>
+            </dd>
+            <dt>Read my book</dt>
+            <dd>
+              <a href="https://www.cosmicpython.com">cosmicpython.com</a>
+            </dd>
+          </dl>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="node_modules/reveal.js/dist/reveal.js"></script>
+    <script src="node_modules/reveal.js/plugin/notes/notes.js"></script>
+    <script src="node_modules/reveal.js/plugin/markdown/markdown.js"></script>
+    <script src="node_modules/reveal.js/plugin/highlight/highlight.js"></script>
+    <script type="text/javascript">
+      document
+        .querySelectorAll("aside")
+        .forEach((note) => note.classList.add("notes"));
+
+      document
+        .querySelectorAll("figure.attributed")
+        .forEach((img) => img.classList.add("r-stretch"));
+
+      document.querySelectorAll("code").forEach((code) => {
+        const parent = code.parentNode;
+        const pre = document.createElement("pre");
+        parent.replaceChild(pre, code);
+        pre.appendChild(code);
+      });
+
+      document.querySelectorAll("footer a").forEach((a) => {
+        const codeEl = document.createElement("figure");
+        const code = new QRCode(codeEl, {
+          text: a.href,
+          width: 100,
+          height: 100,
+        });
+        a.innerText = a.href;
+        a.appendChild(codeEl);
+      });
+      Reveal.initialize({
+        hash: true,
+
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+      });
+    </script>
+  </body>
+</html>
