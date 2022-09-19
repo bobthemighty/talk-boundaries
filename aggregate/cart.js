@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 export const EMPTY = -1;
 
-
 export class Cart {
   // this is the version number we use for optimistic concurrency
   #version = -1;

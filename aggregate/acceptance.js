@@ -14,7 +14,6 @@ import {
 const client = new DynamoDBClient({ region: process.env.AWS_REGION });
 
 (async () => {
-
   // Persist an empty cart
   let empty = new Cart();
   await Carts.put(empty);
