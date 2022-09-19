@@ -9,7 +9,9 @@ export class Cart {
 
   constructor(cartId, version, items) {
     this.#cartId = cartId || uuidv4();
-    this.#version = version ?? -1;
+    // initialising the version to a magic number means we can tell
+    // if this cart is brand new or being updated
+    this.#version = version ?? EMPTY;
     this.#items = items
       ? Object.fromEntries(items.map((item) => [item.sku, item]))
       : {};
