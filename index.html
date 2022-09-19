@@ -878,6 +878,13 @@
                 librarian has locked the checkout and wants to lock the book.
                 This is a dead-lock, and it results in broken websites.
               </p>
+              <p>
+                In a dead lock, we have multiple clients who are requesting
+                locks on multiple items, and they all hold a subset. The result
+                is that nobody can lock all of the resources that they need to
+                do their job and so the database just *hangs* waiting for
+                someone to get bored and give up
+              </p>
 
               <p>
                 I've spoken to teams before who are deeply freaked out by
@@ -975,6 +982,14 @@
                 someone to modify the items without using the cart, we can use
                 smaller locks and that reduces the scope for deadlocks and
                 performance problems.
+              </p>
+              <p>
+                Now we only need to lock a single object - the cart - and that
+                means we can't end up in the situation where the librarian has
+                locked the check out table and your gran has locked the book.
+                This effectively prevents deadlocks but the trade-off is that we
+                have to manage the consistency of the check out items ourselves
+                in our domain model.
               </p>
             </aside>
           </section>
