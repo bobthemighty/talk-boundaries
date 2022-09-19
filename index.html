@@ -1248,6 +1248,12 @@
             <img src="assets/img/book_class.excalidraw.png" class="r-stretch" />
             <aside>
               <p>
+                Our first thought might be that the aggregate is the _book_.
+                Books are clearly important objects in the context of our
+                library system, and only one person can check out a book at a
+                time. Isn't that a good consistency boundary?
+              </p>
+              <p>
                 But remember that when I want to mutate the state of an
                 aggregate, I'm going to load the whole thing into memory. do I
                 need the complete history of a book to make borrowing decisions?
