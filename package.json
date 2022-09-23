@@ -9,8 +9,6 @@
   "author": "Bob Gregory",
   "license": "ISC",
   "dependencies": {
-    "live-server": "^1.2.2",
-    "prettier": "^2.7.1",
     "reveal.js": "^4.3.1"
   }
 }
