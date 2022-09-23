@@ -7,17 +7,7 @@
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <link rel="stylesheet" href="node_modules/reveal.js/dist/reset.css" />
-    <link rel="stylesheet" href="node_modules/reveal.js/dist/reveal.css" />
-    <link
-      rel="stylesheet"
-      href="node_modules/reveal.js/dist/theme/solarized.css"
-    />
-    <link
-      rel="stylesheet"
-      href="node_modules/reveal.js/plugin/highlight/zenburn.css"
-    />
-    <style>
+   <style>
       .container {
         display: grid;
         grid-auto-flow: column;
@@ -1850,18 +1840,10 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="node_modules/reveal.js/dist/reveal.js"></script>
-    <script src="node_modules/reveal.js/plugin/notes/notes.js"></script>
-    <script src="node_modules/reveal.js/plugin/markdown/markdown.js"></script>
-    <script src="node_modules/reveal.js/plugin/highlight/highlight.js"></script>
     <script type="text/javascript">
       document
         .querySelectorAll("aside")
         .forEach((note) => note.classList.add("notes"));
-
-      document
-        .querySelectorAll("figure.attributed")
-        .forEach((img) => img.classList.add("r-stretch"));
 
       document.querySelectorAll("code").forEach((code) => {
         const parent = code.parentNode;
@@ -1880,12 +1862,7 @@
         a.innerText = a.href;
         a.appendChild(codeEl);
       });
-      Reveal.initialize({
-        hash: true,
 
-        // Learn about plugins: https://revealjs.com/plugins/
-        plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
-      });
     </script>
   </body>
 </html>
